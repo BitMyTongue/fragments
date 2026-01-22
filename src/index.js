@@ -3,8 +3,8 @@
 // Read environment variables from an .env file (if present)
 // NOTE: we only need to do this once, here in our app's main entry point.
 
-// breaking our CI on purpose
-const unneededVariable = 'This variable is never used';
+// // breaking our CI on purpose
+// const unneededVariable = 'This variable is never used';
 
 require('dotenv').config();
 
