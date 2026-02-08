@@ -15,8 +15,41 @@ const {
 } = require('./data');
 
 class Fragment {
-  constructor({ id, ownerId, created, updated, type, size = 0 }) {
-    // TODO
+  constructor({ id, ownerId, created, updated, type, size = 0 }) {  // size defaulted to 0 if missing
+    
+    if (!ownerId) throw new Error('ownerId is required');                       // ownerId required
+    if (!type) throw new Error('type is required');                             // type required
+    if (!Fragment.isSupportedType(type)) throw new Error('unsupported type');   // will write isSupportedType() below
+    
+    if (typeof size !== 'number' || Number.isNaN(size)) {                       // size must be a number
+      throw new Error('size must be a number');
+    }
+    if (size < 0) {                                 // size cannot be negative
+      throw new Error('size cannot be negative');
+    }
+
+    if (id) {                   // use id passed in if present
+      this.id = id;
+    } else {                    // else generate one and set it
+      this.id = randomUUID();
+    }
+
+    this.ownerId = ownerId;
+    this.type = type;
+    this.size = size;
+
+    const now = new Date().toISOString();
+    
+    if (created){
+      this.created = created;
+    } else {
+      this.created = now;
+    }
+    if (updated){
+      this.updated = updated;
+    } else {
+      this.updated = now;
+    }
   }
 
   /**
@@ -26,7 +59,16 @@ class Fragment {
    * @returns Promise<Array<Fragment>>
    */
   static async byUser(ownerId, expand = false) {
-    // TODO
+    // get list of fragment ids from the owner
+    const fragIds = await listFragments(ownerId);
+
+    if (!expand) {      // if expand is false, they only wants the ids
+      return fragIds;
+    }
+
+    // if expand is true, they want full fragment objects for all ids
+    const fragments = await Promise.all(fragIds.map((id) => Fragment.byId(ownerId, id)));
+    return fragments;
   }
 
   /**
@@ -36,26 +78,40 @@ class Fragment {
    * @returns Promise<Fragment>
    */
   static async byId(ownerId, id) {
-    // TODO
-    // TIP: make sure you properly re-create a full Fragment instance after getting from db.
-  }
+    const result = await readFragment(ownerId, id);
 
+    if (!result) {
+      throw new Error('fragment not found');
+    }
+
+    return new Fragment(result);    // test awaits an actual Fragment instance
+  }
   /**
    * Delete the user's fragment data and metadata for the given id
    * @param {string} ownerId user's hashed email
    * @param {string} id fragment's id
    * @returns Promise<void>
    */
-  static delete(ownerId, id) {
-    // TODO
+  static async delete(ownerId, id) {
+    await deleteFragment(ownerId, id);
   }
 
   /**
    * Saves the current fragment (metadata) to the database
    * @returns Promise<void>
    */
-  save() {
-    // TODO
+  async save() {
+    // update time
+    this.updated = new Date().toISOString();
+  
+    await writeFragment({
+      id: this.id,
+      ownerId: this.ownerId,
+      created: this.created,
+      updated: this.updated,
+      type: this.type,
+      size: this.size,
+    });
   }
 
   /**
@@ -63,7 +119,7 @@ class Fragment {
    * @returns Promise<Buffer>
    */
   getData() {
-    // TODO
+    return readFragmentData(this.ownerId, this.id);
   }
 
   /**
@@ -72,8 +128,18 @@ class Fragment {
    * @returns Promise<void>
    */
   async setData(data) {
-    // TODO
     // TIP: make sure you update the metadata whenever you change the data, so they match
+
+    if (!Buffer.isBuffer(data)) throw new Error('data must be a Buffer');  // throws if not a buffer
+
+    // from data/index.js : writeFragmentData(owner, id, buffer)
+    await writeFragmentData(this.ownerId, this.id, data);
+    
+    // update the fragment size
+    this.size = data.length;
+
+    // save metadata
+    await this.save();
   }
 
   /**
@@ -91,7 +157,7 @@ class Fragment {
    * @returns {boolean} true if fragment's type is text/*
    */
   get isText() {
-    // TODO
+    return this.mimeType.startsWith('text/');
   }
 
   /**
@@ -99,7 +165,13 @@ class Fragment {
    * @returns {Array<string>} list of supported mime types
    */
   get formats() {
-    // TODO
+    // Just text/plain for now
+    if (this.mimeType === 'text/plain') {
+      return ['text/plain'];
+    }
+
+    // or return an empty array
+    return [];
   }
 
   /**
@@ -108,7 +180,13 @@ class Fragment {
    * @returns {boolean} true if we support this Content-Type (i.e., type/subtype)
    */
   static isSupportedType(value) {
-    // TODO
+    try {
+      const { type } = contentType.parse(value);
+
+      return type === 'text/plain' || type === 'text/plain; charset=utf-8';   // return true if supported type
+    } catch {
+      return false;
+    }
   }
 }
 
