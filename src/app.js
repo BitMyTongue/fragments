@@ -37,10 +37,6 @@ app.use(passport.initialize());
 // Define our routes
 app.use('/', require('./routes'));
 
-
-// Define our routes
-app.use('/', require('./routes'));
-
 // Add 404 middleware to handle any requests for resources that can't be found
 app.use((req, res) => {
   res.status(404).json(

@@ -22,5 +22,27 @@ describe('GET /v1/fragments', () => {
     expect(Array.isArray(res.body.fragments)).toBe(true);
   });
 
-  // TODO: we'll need to add tests to check the contents of the fragments array later
+  test('authenticated user retrieving a fragment id', async () => {
+    // create a test fragment
+    const postRes = await request(app)
+      .post('/v1/fragments')
+      .auth('test-user1@fragments-testing.com', 'test-password1')
+      .set('Content-Type', 'text/plain')
+      .send('hello');
+
+    expect(postRes.statusCode).toBe(201);
+
+    const id = postRes.body.fragment.id;
+    expect(id).toBeTruthy();
+
+    const getRes = await request(app)
+      .get('/v1/fragments')
+      .auth('test-user1@fragments-testing.com', 'test-password1');
+
+    expect(getRes.statusCode).toBe(200);
+    expect(getRes.body.status).toBe('ok');
+    
+    // list fragments, should include id
+    expect(getRes.body.fragments).toContain(id);
+  });
 });
