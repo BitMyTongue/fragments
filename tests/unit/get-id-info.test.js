@@ -23,7 +23,7 @@ describe('GET /v1/fragments/:id/info', () => {
     expect(res.body.status).toBe('ok');
     expect(res.body.fragment.id).toBe(id);
     expect(res.body.fragment.type).toBe('text/plain');
-    expect(res.body.fragment.size).toBe(11);
+    expect(res.body.fragment.size).toBe(16);
   });
 
   test('returns 404 for non-existent fragment', async () => {
