@@ -50,4 +50,5 @@ COPY --from=build /app .
 EXPOSE 8080
 
 # Start the container by running our server
-CMD npm start
+# CMD npm start
+CMD ["npm", "start"]
