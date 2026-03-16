@@ -165,11 +165,26 @@ class Fragment {
    * @returns {Array<string>} list of supported mime types
    */
   get formats() {
-    // Just text/plain for now
     if (this.mimeType === 'text/plain') {
       return ['text/plain'];
     }
 
+    if (this.mimeType === 'text/markdown') {
+      return ['text/markdown', 'text/html'];
+    }
+
+    if (this.mimeType === 'text/html') {
+      return ['text/html'];
+    }
+
+    if (this.mimeType === 'application/json') {
+      return ['application/json'];
+    }
+
+    if (this.isText) {
+      return [this.mimeType];
+    }
+    
     // or return an empty array
     return [];
   }
@@ -183,7 +198,7 @@ class Fragment {
     try {
       const { type } = contentType.parse(value);
 
-      return type === 'text/plain' || type === 'text/plain; charset=utf-8';   // return true if supported type
+      return type.startsWith('text/') || type === 'application/json';
     } catch {
       return false;
     }
