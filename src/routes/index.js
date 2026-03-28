@@ -5,6 +5,8 @@ const express = require('express');
 // version and author from package.json
 const { version, author } = require('../../package.json');
 
+const { hostname } = require('os');
+
 const { createSuccessResponse } = require('../response');
 
 // Create a router that we can use to mount our API
@@ -35,6 +37,7 @@ router.get('/', (req, res) => {
     githubUrl: 'https://github.com/BitMyTongue/fragments',
     version,
     timestamp: new Date().toISOString(),
+    hostname: hostname(),
   })
 );
 
