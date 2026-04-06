@@ -94,9 +94,14 @@ jobs:
         run: npm install
       - name: Build Containers
         run: docker compose up --build -d
+
+      - name: Debug container status
+        run: |
+          docker compose ps
+          docker compose logs localstack --tail=50
+          docker compose logs dynamodb-local --tail=50
+
       - name: Setup Local AWS Resources
-        # NOTE: this file needs to be made executable *before* you check into git:
-        # $ chmod +x ./scripts/local-aws-setup.sh
         run: ./scripts/local-aws-setup.sh
       - name: Run Hurl Tests
         run: npm run test:integration
