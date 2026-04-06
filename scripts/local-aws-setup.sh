@@ -15,20 +15,11 @@ export AWS_SECRET_ACCESS_KEY=test
 export AWS_DEFAULT_REGION=us-east-1
 echo "AWS_DEFAULT_REGION=us-east-1"
 
-# Wait for LocalStack to be ready, by inspecting the response from healthcheck
+# Wait for LocalStack S3 to be ready
 echo 'Waiting for LocalStack S3...'
-for i in $(seq 1 24); do
-    HEALTH=$(curl --silent http://localhost:4566/_localstack/health)
-    echo "$HEALTH"
-    echo "$HEALTH" | grep "\"s3\": \"\(running\|available\)\"" > /dev/null && break
+until aws --endpoint-url=http://localhost:4566 s3api list-buckets > /dev/null 2>&1; do
     sleep 5
 done
-
-echo "$HEALTH" | grep "\"s3\": \"\(running\|available\)\"" > /dev/null || {
-    echo 'LocalStack S3 did not become ready in time'
-    exit 1
-}
-
 echo 'LocalStack S3 Ready'
 
 # Create our S3 bucket with LocalStack
