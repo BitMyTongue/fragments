@@ -7,10 +7,10 @@ const ddbDocClient = require('./ddbDocClient');
 const { PutCommand, GetCommand, QueryCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 const { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
-// Create two in-memory databases: one for fragment metadata and the other for raw data
-// The `data` MemoryDB simulates Amazon S3 for blob storage, the `metadata` simulates
-// Amazon DynamoDB for key/value storage.
-const metadata = new MemoryDB();
+// // Create two in-memory databases: one for fragment metadata and the other for raw data
+// // The `data` MemoryDB simulates Amazon S3 for blob storage, the `metadata` simulates
+// // Amazon DynamoDB for key/value storage.
+// const metadata = new MemoryDB();
 
 // Writes a fragment to DynamoDB. Returns a Promise.
 function writeFragment(fragment) {
