@@ -17,9 +17,17 @@ echo "AWS_DEFAULT_REGION=us-east-1"
 
 # Wait for LocalStack S3 to be ready
 echo 'Waiting for LocalStack S3...'
-until aws --endpoint-url=http://localhost:4566 s3api list-buckets > /dev/null 2>&1; do
+for i in $(seq 1 24); do
+    echo "Attempt $i..."
+    aws --endpoint-url=http://localhost:4566 s3api list-buckets && break
     sleep 5
 done
+
+aws --endpoint-url=http://localhost:4566 s3api list-buckets > /dev/null 2>&1 || {
+    echo 'LocalStack S3 did not become ready in time'
+    exit 1
+}
+
 echo 'LocalStack S3 Ready'
 
 # Create our S3 bucket with LocalStack
