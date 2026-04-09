@@ -81,11 +81,31 @@ class Fragment {
     const result = await readFragment(ownerId, id);
 
     if (!result) {
-      throw new Error('fragment not found');
+      const error = new Error('fragment not found');
+      error.statusCode = 404;
+      throw error;
     }
 
     return new Fragment(result);    // test awaits an actual Fragment instance
   }
+
+  static async update(ownerId, id, data, type) {
+    const fragment = await Fragment.byId(ownerId, id);
+
+    if (!Buffer.isBuffer(data)) {
+      throw new Error('data must be a Buffer');
+    }
+
+    if (fragment.type !== type) {
+      const error = new Error('fragment type cannot be changed');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    await fragment.setData(data);
+    return fragment;
+  }
+
   /**
    * Delete the user's fragment data and metadata for the given id
    * @param {string} ownerId user's hashed email
