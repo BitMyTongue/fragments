@@ -190,22 +190,25 @@ class Fragment {
     }
 
     if (this.mimeType === 'text/markdown') {
-      return ['text/markdown', 'text/html'];
+      return ['text/markdown', 'text/html', 'text/plain'];
     }
 
     if (this.mimeType === 'text/html') {
-      return ['text/html'];
+      return ['text/html', 'text/plain'];
     }
 
     if (this.mimeType === 'application/json') {
-      return ['application/json'];
+      return ['application/json', 'text/plain'];
     }
 
     if (this.isText) {
-      return [this.mimeType];
+      return [this.mimeType, 'text/plain'];
     }
-    
-    // or return an empty array
+
+    if (this.mimeType.startsWith('image/')) {
+      return ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    }
+
     return [];
   }
 
@@ -218,7 +221,11 @@ class Fragment {
     try {
       const { type } = contentType.parse(value);
 
-      return type.startsWith('text/') || type === 'application/json';
+      return (
+      type.startsWith('text/') ||
+      type === 'application/json' ||
+      type.startsWith('image/')
+    );
     } catch {
       return false;
     }

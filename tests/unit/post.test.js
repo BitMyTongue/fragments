@@ -11,7 +11,7 @@ describe('POST /v1/fragments', () => {
     const res = await request(app)
       .post('/v1/fragments')
       .auth('test-user1@fragments-testing.com', 'test-password1')
-      .set('Content-Type', 'image/png') // not supported
+      .set('Content-Type', 'video/mp4') // not supported
       .send('fake');
 
     expect(res.statusCode).toBe(415);

@@ -3,6 +3,7 @@
  */
 
 const MarkdownIt = require('markdown-it');
+const sharp = require('sharp');
 const { createErrorResponse } = require('../../response');
 const { Fragment } = require('../../model/fragment');
 
@@ -26,6 +27,11 @@ module.exports = async (req, res) => {
     md: 'text/markdown',
     html: 'text/html',
     json: 'application/json',
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    webp: 'image/webp',
+    gif: 'image/gif',
   };
 
   const requestedType = ext ? extensionMap[ext] : fragment.mimeType;
@@ -43,6 +49,24 @@ module.exports = async (req, res) => {
   if (fragment.mimeType === 'text/markdown' && requestedType === 'text/html') {
     const md = new MarkdownIt();
     data = Buffer.from(md.render(data.toString()));
+  } else if (fragment.mimeType === 'text/markdown' && requestedType === 'text/plain') {
+    data = Buffer.from(data.toString());
+  } else if (fragment.mimeType === 'text/html' && requestedType === 'text/plain') {
+    const stripped = data.toString().replace(/<[^>]*>/g, '');
+    data = Buffer.from(stripped);
+  } else if (fragment.mimeType === 'application/json' && requestedType === 'text/plain') {
+    const pretty = JSON.stringify(JSON.parse(data.toString()), null, 2);
+    data = Buffer.from(pretty);
+  } else if (fragment.mimeType.startsWith('image/') && requestedType.startsWith('image/')) {
+    if (requestedType === 'image/png') {
+      data = await sharp(data).png().toBuffer();
+    } else if (requestedType === 'image/jpeg') {
+      data = await sharp(data).jpeg().toBuffer();
+    } else if (requestedType === 'image/webp') {
+      data = await sharp(data).webp().toBuffer();
+    } else if (requestedType === 'image/gif') {
+      data = await sharp(data).gif().toBuffer();
+    }
   }
 
   res.setHeader('Content-Type', requestedType);
